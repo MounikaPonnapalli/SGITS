@@ -7,20 +7,19 @@ public class MeanMedian28
     {
         Scanner input = new Scanner(System.in);
         System.out.print("Enter the number of elements u want:");
-        int num = input.nextInt();
-        int[] arr= new int[num];
+        int num =input.nextInt();
+        int[] arr=new int[num];
         System.out.print("Enter the elements of the vector A:");
-        for (int i = 0; i < num; i++) 
+        for (int i=0;i<num;i++) 
         {
             arr[i] = input.nextInt();
         }
-        // Calculate Mean
         double sum = 0;
-        for (int i=0;i<arr.length; i++)
+        for (int i=0;i<arr.length;i++)
         {
-            sum += num;
+            sum+=num;
         }
-        double mean = sum / num;
+        double mean=sum/num;
         Arrays.sort(arr);
         double median;
         if (num%2!=0) 
