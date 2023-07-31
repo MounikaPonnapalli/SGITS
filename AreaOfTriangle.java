@@ -9,8 +9,5 @@ public class AreaOfTriangle
         int length=input.nextInt();
         int breadth=input.nextInt();
         System.out.println("Area of the triangle:"+(length*breadth)/2);
-    }
-    
-
-    
+    } 
 }
