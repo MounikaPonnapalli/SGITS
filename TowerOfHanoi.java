@@ -25,7 +25,7 @@ class TowerOfHanoi
         System.out.println("Enter the Destination:");
         int C=input.nextInt();
         int totalMoves=towerOfHanoi(num,A,B,C);
-        System.out.println("Total moves: "+totalMoves);
+        System.out.println("Total moves:"+totalMoves);
     }
 }
 
