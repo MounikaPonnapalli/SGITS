@@ -1,4 +1,4 @@
-
+//17.4,17.5 construct a tree given Inorder to preorder,post order traversal
 import java.util.Scanner;
 public class TraversalOnTree
 {
@@ -69,11 +69,11 @@ public class TraversalOnTree
     public static void main(String[] args) 
     {
         Scanner input=new Scanner(System.in);
-        System.out.print("Enter the root value: ");
+        System.out.print("Enter the root value:");
         int rootValue=input.nextInt();
         Node rootnode=new Node(rootValue);
         System.out.println("Building tree with root value "+rootnode.value);
-        System.out.print("Enter the number of elements to insert: ");
+        System.out.print("Enter the number of elements to insert:");
         int num=input.nextInt();
         System.out.println("Enter "+num+" values to insert into the tree:");
         for(int i=0;i<num;i++) 

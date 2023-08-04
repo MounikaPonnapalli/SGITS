@@ -57,7 +57,7 @@ class Queue
         while(current!=null) 
         {
             System.out.print(current.data+" ");
-            current = current.next;
+            current=current.next;
         }
         System.out.println();
     }
