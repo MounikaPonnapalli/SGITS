@@ -1,3 +1,4 @@
+//implement round robin sheduling algorithm
 import java.util.Scanner;
 class Process 
 {
@@ -5,7 +6,7 @@ class Process
     int bTime;
     int rTime;
 }
-public class RoundRobin
+public class RoundRobinscheduling
 {
     public static void main(String[] args)
     {
@@ -32,7 +33,7 @@ public class RoundRobin
                 if(currentProcess.rTime>0)
                 {
                     int executionTime=Math.min(tq,currentProcess.rTime);
-                    System.out.println("Executing process "+(i+1)+" for "+executionTime);
+                    System.out.println("Executing process "+(i+1)+"for"+executionTime);
                     cT+=executionTime;
                     currentProcess.rTime-=executionTime;
                     if(currentProcess.rTime==0)
@@ -43,11 +44,5 @@ public class RoundRobin
                 }
             }
         }
-        System.out.println("gantt chart:");
-        for(int i=0;i<num;i++)
-        {
-            System.out.print("P"+pro[i]+" ");
-        }
     }
-
 }
