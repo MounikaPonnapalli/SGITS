@@ -6,4 +6,9 @@ import com.example.demo.entity.CarBrand;
 
 public interface CarBrandRepository extends JpaRepository<CarBrand, Long>{
 
+
+	
+
+	
+
 }

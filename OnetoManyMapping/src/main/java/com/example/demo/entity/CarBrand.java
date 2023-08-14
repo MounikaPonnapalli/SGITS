@@ -1,6 +1,10 @@
 package com.example.demo.entity;
 
+import java.util.ArrayList;
 import java.util.List;
+//import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -10,7 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 
 @Entity
-public class CarBrand {
+public class CarBrand{
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -18,7 +22,8 @@ public class CarBrand {
 	private String countryOfOrigin;
 	
 	@OneToMany(mappedBy = "carbrand", cascade = CascadeType.ALL, orphanRemoval = true)
-	private List<CarModel> carmodel;
+	@JsonIgnore
+	private List<CarModel> carmodels = new ArrayList<>();
 
 	public Long getId() {
 		return id;
@@ -45,17 +50,17 @@ public class CarBrand {
 	}
 
 	public List<CarModel> getCarmodel() {
-		return carmodel;
+		return carmodels;
 	}
 
 	public void setCarmodel(List<CarModel> carmodel) {
-		this.carmodel = carmodel;
+		this.carmodels = carmodel;
 	}
 
 	@Override
 	public String toString() {
 		return "CarBrand [id=" + id + ", carBrand=" + carBrand + ", countryOfOrigin=" + countryOfOrigin + ", carmodel="
-				+ carmodel + "]";
+				+ carmodels + "]";
 	}
 
 }
