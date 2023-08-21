@@ -39,36 +39,53 @@ public class LibraryController {
     }
 
     @GetMapping("/book")
-    public ResponseEntity<Book> getBookById(@RequestParam("id") Long id) {
+    public ResponseEntity<?> getBookById(@RequestParam("id") Long id) {
         Book book = bookService.getBookById(id);
         if (book != null) {
             return ResponseEntity.ok(book);
         } else {
-            return ResponseEntity.notFound().build();
+            //return ResponseEntity.notFound().build();
+        	return ResponseEntity.badRequest().body("Book not available");
         }
     }
     
     @PutMapping("/update")
-    public ResponseEntity<Book> updateBook(@RequestParam("id") Long id, @RequestBody Book updatedBook) {
+    public ResponseEntity<?> updateBook(@RequestParam("id") Long id, @RequestBody Book updatedBook) {
         Book existingBook = bookService.getBookById(id);
-        
-        if(existingBook != null) 
-        {
-            existingBook.setTitle(updatedBook.getTitle());
-            existingBook.setAuthor(updatedBook.getAuthor());
-            existingBook.setAvailable(updatedBook.isAvailable());
 
-            bookService.saveBook(existingBook);
+        if (existingBook != null) {
+            if (existingBook.isAvailable()) {
+                existingBook.setTitle(updatedBook.getTitle());
+                existingBook.setAuthor(updatedBook.getAuthor());
+                existingBook.setAvailable(updatedBook.isAvailable());
 
-            return ResponseEntity.ok(existingBook);
+                bookService.saveBook(existingBook);
+
+                return ResponseEntity.ok(existingBook);
+            } else {
+                return ResponseEntity.badRequest().body("Book is not available for update");
+            }
         } else {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.badRequest().body("Book id is not found");
         }
     }
 
 
     @DeleteMapping("/deleteBook")
+    public ResponseEntity<?> deleteBook(@RequestParam("id") Long id) {
+        boolean deleted = bookService.deleteBook(id);
+
+        if (deleted) {
+            return ResponseEntity.ok("Book deleted successfully");
+        } else {
+            return ResponseEntity.badRequest().body("Book not available for deletion");
+        }
+    }
+
+
+/*
+    @DeleteMapping("/deleteBook")
     public void deleteBook(@RequestParam("id") Long id) {
         bookService.deleteBook(id);
-    }
+    }*/
 }
