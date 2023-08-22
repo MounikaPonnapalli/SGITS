@@ -1,10 +1,15 @@
 package com.example.demo.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -14,78 +19,151 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.entity.Book;
+import com.example.demo.exceptions.BookNotFoundException;
 import com.example.demo.service.BookService;
 
 @RestController
 @RequestMapping("/library")
-public class LibraryController {
+@ControllerAdvice
+public class LibraryController 
+{
     @Autowired
     private BookService bookService;
-
     
-    @PostMapping("/addBook")
-    public void addBook(@RequestBody Book book) {
-        bookService.saveBook(book);
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleException(Exception e) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "An error occurred");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+
+    @ExceptionHandler(BookNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleBookNotFoundException(BookNotFoundException e) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
     
+    
+    @PostMapping("/addBook")
+    public ResponseEntity<Book> addBook(@RequestBody Book book) 
+    {
+        try 
+        {
+            Book addedBook = bookService.saveBook(book);
+            return ResponseEntity.ok(addedBook);
+        } 
+        catch (Exception e) 
+        {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    
     @GetMapping("/books")
-    public List<Book> getAllBooks() {
+    public List<Book> getAllBooks() 
+    {
         return bookService.getAllBooks();
     }
 
-    @GetMapping("/available")
-    public List<Book> getAvailableBooks() {
-        return bookService.getAvailableBooks();
-    }
-
     @GetMapping("/book")
-    public ResponseEntity<?> getBookById(@RequestParam("id") Long id) {
+    public ResponseEntity<Map<String, String>> getBookById(@RequestParam("id") Long id) 
+    {
         Book book = bookService.getBookById(id);
-        if (book != null) {
-            return ResponseEntity.ok(book);
-        } else {
-            //return ResponseEntity.notFound().build();
-        	return ResponseEntity.badRequest().body("Book not available");
+        if (book != null) 
+        {
+            return ResponseEntity.ok(new HashMap<>());
+        } 
+        else 
+        {
+            throw new BookNotFoundException("Book not available");
         }
     }
-    
-    @PutMapping("/update")
-    public ResponseEntity<?> updateBook(@RequestParam("id") Long id, @RequestBody Book updatedBook) {
-        Book existingBook = bookService.getBookById(id);
+    @GetMapping("/available")
+    public ResponseEntity<List<Book>> getAvailableBooks() {
+        List<Book> availableBooks = bookService.getAvailableBooks();
+        return ResponseEntity.ok(availableBooks);
+    }
 
-        if (existingBook != null) {
-            if (existingBook.isAvailable()) {
-                existingBook.setTitle(updatedBook.getTitle());
-                existingBook.setAuthor(updatedBook.getAuthor());
-                existingBook.setAvailable(updatedBook.isAvailable());
 
-                bookService.saveBook(existingBook);
-
-                return ResponseEntity.ok(existingBook);
-            } else {
-                return ResponseEntity.badRequest().body("Book is not available for update");
+    @PutMapping("/updateToTrue")
+    public ResponseEntity<Map<String, String>> updateBookAvailabilityToTrue(@RequestParam("id") Long id) 
+    {
+        try 
+        {
+            boolean updated = bookService.updateBookAvailabilityToTrue(id);
+            if (updated) 
+            {
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "Book availability updated to true");
+                return ResponseEntity.ok(response);
+            } 
+            else 
+            {
+                throw new RuntimeException("Book is already available. No update needed.");
             }
-        } else {
-            return ResponseEntity.badRequest().body("Book id is not found");
+        } 
+        catch (Exception e) 
+        {
+            throw new RuntimeException("An error occurred while updating book availability");
         }
     }
 
+    @PutMapping("/updateToFalse")
+    public ResponseEntity<Map<String, String>> updateBookAvailabilityToFalse(@RequestParam("id") Long id)
+    {
+        try 
+        {
+            boolean updated = bookService.updateBookAvailabilityToFalse(id);
 
-    @DeleteMapping("/deleteBook")
-    public ResponseEntity<?> deleteBook(@RequestParam("id") Long id) {
-        boolean deleted = bookService.deleteBook(id);
-
-        if (deleted) {
-            return ResponseEntity.ok("Book deleted successfully");
-        } else {
-            return ResponseEntity.badRequest().body("Book not available for deletion");
+            if (updated) 
+            {
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "Book availability updated to false");
+                return ResponseEntity.ok(response);
+            } 
+            else 
+            {
+                throw new RuntimeException("Book is not available for update");
+            }
+        } 
+        catch (Exception e) 
+        {
+            throw new RuntimeException("An error occurred while updating book availability");
         }
     }
 
-
-/*
     @DeleteMapping("/deleteBook")
-    public void deleteBook(@RequestParam("id") Long id) {
-        bookService.deleteBook(id);
-    }*/
-}
+    public ResponseEntity<Map<String, String>> deleteBook(@RequestParam("id") Long id) 
+    {
+        try 
+        {
+            Book existingBook = bookService.getBookById(id);
+
+            if (existingBook != null)
+            {
+                boolean deleted = bookService.deleteBook(id);
+
+                if (deleted) 
+                {
+                    Map<String, String> response = new HashMap<>();
+                    response.put("message", "Book deleted successfully");
+                    return ResponseEntity.ok(response);
+                } 
+                else 
+                {
+                    throw new RuntimeException("Book not available for deletion");
+                }
+            } 
+            else
+            {
+                throw new BookNotFoundException("Book id is not found");
+            }
+        } 
+        catch (Exception e) 
+        {
+            throw new RuntimeException("An error occurred while deleting the book");
+        }
+    }
+
+} 
