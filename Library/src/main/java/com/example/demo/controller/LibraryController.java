@@ -45,6 +45,7 @@ public class LibraryController
     }
     
     
+    
     @PostMapping("/addBook")
     public ResponseEntity<Book> addBook(@RequestBody Book book) 
     {
@@ -52,10 +53,10 @@ public class LibraryController
         {
             Book addedBook = bookService.saveBook(book);
             return ResponseEntity.ok(addedBook);
-        } 
+        }
         catch (Exception e) 
         {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            throw new BookNotFoundException("Book could not be added");
         }
     }
 
@@ -87,25 +88,25 @@ public class LibraryController
 
 
     @PutMapping("/updateToTrue")
-    public ResponseEntity<Map<String, String>> updateBookAvailabilityToTrue(@RequestParam("id") Long id) 
+    public ResponseEntity<Map<String, String>> updateBookAvailabilityToTrue(@RequestParam("id") Long id)
     {
         try 
         {
             boolean updated = bookService.updateBookAvailabilityToTrue(id);
-            if (updated) 
+            if (updated)
             {
                 Map<String, String> response = new HashMap<>();
                 response.put("message", "Book availability updated to true");
                 return ResponseEntity.ok(response);
-            } 
-            else 
+            }
+            else
             {
-                throw new RuntimeException("Book is already available. No update needed.");
+                throw new BookNotFoundException("Book is already available. No update needed.");
             }
         } 
         catch (Exception e) 
         {
-            throw new RuntimeException("An error occurred while updating book availability");
+            throw new BookNotFoundException("An error occurred while updating book availability");
         }
     }
 
@@ -124,12 +125,12 @@ public class LibraryController
             } 
             else 
             {
-                throw new RuntimeException("Book is not available for update");
+                throw new BookNotFoundException("Book is not available for update");
             }
         } 
         catch (Exception e) 
         {
-            throw new RuntimeException("An error occurred while updating book availability");
+            throw new BookNotFoundException("An error occurred while updating book availability");
         }
     }
 
@@ -152,7 +153,7 @@ public class LibraryController
                 } 
                 else 
                 {
-                    throw new RuntimeException("Book not available for deletion");
+                    throw new BookNotFoundException("Book not available for deletion");
                 }
             } 
             else
@@ -162,7 +163,7 @@ public class LibraryController
         } 
         catch (Exception e) 
         {
-            throw new RuntimeException("An error occurred while deleting the book");
+            throw new BookNotFoundException("An error occurred while deleting the book");
         }
     }
 
