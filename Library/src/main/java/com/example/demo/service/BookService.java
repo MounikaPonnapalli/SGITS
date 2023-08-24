@@ -4,11 +4,13 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import com.example.demo.entity.Book;
 import com.example.demo.repository.BookRepository;
 @Service
 public class BookService 
 {
+	
     @Autowired
     private BookRepository bookRepository;
 
@@ -19,21 +21,25 @@ public class BookService
 
     public List<Book> getAllBooks() 
     {
+    	
         return bookRepository.findAll();
     }
     
     public List<Book> getAvailableBooks() 
     {
+    	
         return bookRepository.findByAvailable(true);
     }
 
     public Book getBookById(Long id) 
     {
+    	
         return bookRepository.findById(id).orElse(null);
     }
 
     public boolean updateBookAvailabilityToTrue(Long id) 
     {
+    	
         Book existingBook = bookRepository.findById(id).orElse(null);
         if (existingBook != null) 
         {
