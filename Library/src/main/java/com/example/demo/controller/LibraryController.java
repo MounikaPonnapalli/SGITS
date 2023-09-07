@@ -9,6 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,9 +22,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.security.core.Authentication;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import com.example.demo.entity.AuthRequest;
 import com.example.demo.entity.Book;
 import com.example.demo.exceptions.BookNotFoundException;
+import com.example.demo.impl.JwtService;
 import com.example.demo.service.BookService;
 
 @RestController
@@ -36,6 +42,10 @@ public class LibraryController
     @Autowired
     private BookService bookService;
     
+    @Autowired
+	private JwtService jwtService;
+	@Autowired
+	private AuthenticationManager authenticationManager;
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleException(Exception e) {
         Map<String, String> response = new HashMap<>();
@@ -50,9 +60,18 @@ public class LibraryController
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
     
-    
+    @PostMapping("/authenticate")
+	public String generateToken(@RequestBody AuthRequest authRequest) {
+		Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+		if(authentication.isAuthenticated()) {
+		return jwtService.generateToken(authRequest.getUsername());
+		}else {
+			throw new UsernameNotFoundException("Invalid User");
+		}
+	}
     
     @PostMapping("/addBook")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Book> addBook(@RequestBody Book book) 
     {
     	LOGGER.info("Adding a new book: {}");
@@ -71,6 +90,7 @@ public class LibraryController
 
     
     @GetMapping("/books")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public List<Book> getAllBooks() 
     {
     	LOGGER.info("Fetching All Books");
@@ -78,6 +98,7 @@ public class LibraryController
     }
 
     @GetMapping("/book")
+    @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<Book> getBookById(@RequestParam("id") Long id) 
     {
     	LOGGER.info("Fetching book by ID: {}", id);
@@ -95,6 +116,7 @@ public class LibraryController
         }
     }
     @GetMapping("/available")
+   // @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<List<Book>> getAvailableBooks() {
     	LOGGER.trace("Fetching all available books");
         List<Book> availableBooks = bookService.getAvailableBooks();
@@ -104,6 +126,7 @@ public class LibraryController
 
 
     @PutMapping("/updateToTrue")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Map<String, String>> updateBookAvailabilityToTrue(@RequestParam("id") Long id)
     {
     	LOGGER.info("Updating book availability to true for ID: {}", id);
@@ -131,6 +154,7 @@ public class LibraryController
     }
 
     @PutMapping("/updateToFalse")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Map<String, String>> updateBookAvailabilityToFalse(@RequestParam("id") Long id)
     {
     	LOGGER.info("Updating book availability to false for ID: {}", id);
@@ -159,6 +183,7 @@ public class LibraryController
     }
 
     @DeleteMapping("/deleteBook")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Map<String, String>> deleteBook(@RequestParam("id") Long id) 
     {
     	LOGGER.warn("Deleting book with ID: {}", id);
