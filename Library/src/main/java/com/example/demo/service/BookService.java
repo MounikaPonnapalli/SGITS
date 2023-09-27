@@ -13,6 +13,9 @@ public class BookService
 	
     @Autowired
     private BookRepository bookRepository;
+    
+    @Autowired 
+    private MailService mailService;
 
     public Book saveBook(Book book) 
     {
@@ -33,8 +36,18 @@ public class BookService
 
     public Book getBookById(Long id) 
     {
-    	
-        return bookRepository.findById(id).orElse(null);
+    	/*Book book = null;
+    	if(id!=null && id!=0)
+    	{
+    		boolean flag = bookRepository.existsById(id);
+    	}
+    	if(flag)
+    	{
+    		Book book = null;
+            StringBuilder builder=new StringBuilder();
+            builder.append(book.getId()+" "+book.getAuthor()+" "+book.isAvailable()+" "+book.getTitle());
+            mailService.sendMail("pravee1247@gmail.com",book.getTitle(),builder.toString());*/
+            return bookRepository.findById(id).orElse(null);
     }
 
     public boolean updateBookAvailabilityToTrue(Long id) 
@@ -45,6 +58,7 @@ public class BookService
         {
             existingBook.setAvailable(true);
             bookRepository.save(existingBook);
+            mailService.sendMail("pravee1247@gmail.com","Book Availability Update","The book '" + existingBook.getTitle() + "' is now available.");
             return true;
         }
         return false;
@@ -57,6 +71,7 @@ public class BookService
         {
             existingBook.setAvailable(false);
             bookRepository.save(existingBook);
+            mailService.sendMail("pravee1247@gmail.com","Book Availability Update","The book '" + existingBook.getTitle() + "' is not available.");
             return true;
         }
         return false;
